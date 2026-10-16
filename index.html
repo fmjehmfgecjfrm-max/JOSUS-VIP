@@ -1,36 +1,295 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Editor de página de descargas</title>
-<style>
-*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:linear-gradient(160deg,#080808,#191919,#330000);color:#fff;padding:18px 12px}main{max-width:900px;margin:auto}header{padding:22px 18px;text-align:center;background:linear-gradient(135deg,#e60000,#700000);border-radius:18px;box-shadow:0 0 22px #ff000055;margin-bottom:18px}header h1{margin:0;font-size:clamp(22px,5vw,30px)}header p{color:#ffe4e4;font-size:14px;margin-bottom:0}.panel{background:#171717;border:1px solid #393939;border-radius:15px;padding:17px;margin:14px 0;box-shadow:0 5px 15px #0005}.panel h2{font-size:18px;margin:0 0 14px}.field{display:block;margin:12px 0 6px;font-size:14px;color:#eee}input,textarea{width:100%;padding:12px;border:1px solid #555;border-radius:9px;background:#0d0d0d;color:#fff;font:inherit}button,.filebtn{border:0;border-radius:9px;padding:12px 14px;font-weight:bold;cursor:pointer;color:white;background:linear-gradient(90deg,#ff1717,#b30000);font-size:14px}button:hover,.filebtn:hover{filter:brightness(1.15)}.secondary{background:#333;border:1px solid #555}.danger{background:#632020}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.product{padding:13px;border:1px solid #393939;border-radius:11px;margin:10px 0;background:#101010}.product strong{display:block;overflow-wrap:anywhere;margin-bottom:6px}.product small{display:block;color:#bbb;overflow-wrap:anywhere;margin-bottom:10px}.product .actions{margin-top:8px}.hint{font-size:13px;line-height:1.5;color:#ccc}.status{color:#9ff0ad;min-height:20px;font-size:13px}.preview{background:#080808;border-radius:12px;padding:14px}.preview .item{background:#171717;border:1px solid #393939;border-radius:12px;padding:14px;margin:10px 0;text-align:center}.preview .item a{display:block;background:linear-gradient(90deg,#ff1717,#b30000);padding:12px;border-radius:9px;color:white;text-decoration:none;font-weight:bold;margin-top:10px}.filebtn{display:inline-block}.filebtn input{display:none}@media(min-width:700px){.two{display:grid;grid-template-columns:1fr 1fr;gap:14px}}
-</style></head><body><main>
-<header><h1>EDITOR DE DESCARGAS</h1><p>Añade, cambia o elimina productos sin escribir código</p></header>
-<section class="panel"><h2>1. Editar producto</h2><label class="field" for="name">Nombre del producto</label><input id="name" placeholder="Ej.: Holograma VIP"><label class="field" for="url">Enlace de descarga</label><input id="url" type="url" placeholder="https://www.mediafire.com/..."><div class="actions"><button id="save">Añadir producto</button><button id="cancel" class="secondary" hidden>Cancelar edición</button></div><p class="hint">Pega el enlace completo y escribe el nombre que quieres que aparezca en la página.</p><div id="status" class="status" aria-live="polite"></div></section>
-<div class="two"><section class="panel"><h2>2. Tus productos</h2><div id="list"></div><div class="actions"><button id="export">Descargar página HTML actualizada</button><button id="backup" class="secondary">Guardar copia de productos</button><label class="filebtn secondary">Importar página HTML<input id="importHtml" type="file" accept=".html,text/html"></label><label class="filebtn secondary">Importar copia JSON<input id="importJson" type="file" accept=".json,application/json"></label></div><p class="hint">Al descargar el HTML, tendrás la página de descargas lista para subir a tu hosting. El editor guarda los cambios en este navegador, pero la página publicada solo cambia cuando vuelves a descargar y subir el HTML actualizado.</p></section>
-<section class="panel"><h2>Vista previa</h2><div class="preview"><div style="text-align:center;padding:14px;background:linear-gradient(135deg,#e60000,#700000);border-radius:12px"><strong style="font-size:20px">DESCARGA JESÚS 100%</strong><p style="font-size:12px;color:#ffe4e4;margin:8px 0 0">Centro de descargas · Selecciona tu producto</p></div><div id="preview"></div><p style="text-align:center;color:#aaa;font-size:11px;margin-top:16px">DESCARGA JESÚS 100%</p></div></section></div>
-</main>
-<script>
-const initialProducts=[{"name": "REGEDIT 100%", "url": "https://www.mediafire.com/file/l8h4aok4i8bwogy/REGEDIT_100%2525.zip/file"}, {"name": "FlY Wukong", "url": "https://www.mediafire.com/file/ehggnewbfe0gdpf/FLY+WUKONG+VIP.zip/file"}, {"name": "Balas Mágicas 600%", "url": "https://www.mediafire.com/file/o3fh0kqfzbjyrwh/BALAS_M%25C3%2581GICAS_600%2525%25F0%259F%2592%25AF%25F0%259F%2592%25A5.zip/file"}, {"name": "Tienda Invisible", "url": "https://www.mediafire.com/file/1v9v484mncy4g0j/TIENDA+%E2%9B%BA+INVISIBLE+%F0%9F%92%AF%F0%9F%92%A5.zip/file"}, {"name": "Wall Hack Bermuda Todos los Mapas", "url": "https://www.mediafire.com/file/wddx6mvsjck83vd/WOLHACK+BERMUDA+TODOS+LOS+MAPAS.7z/file"}, {"name": "Wall Hack Soco", "url": "https://www.mediafire.com/file/n72cmlk7fjdlwmz/WALL+SOCO.zip/file"}, {"name": "Teletransportación + Puños Dron", "url": "https://www.mediafire.com/file/aahbnr60rtllmu8/TELEPORT+DRONE+++GELO+INVIS%C3%8DVEL+%F0%9F%9F%A2.zip/file"}, {"name": "No Recoil + Pared Invisible", "url": "https://www.mediafire.com/file/m8c67j0j2u5l91q/MINI+REGEDIT+++NO+RECOIL+++GELO+INVIS%C3%8DVEL+%F0%9F%94%B5.7z/file"}, {"name": "Pared Gloo Invisible", "url": "https://www.mediafire.com/file/6txpka77eewvf3s/GELO+INVIS%C3%8DVEL%F0%9F%94%B5.zip/file"}, {"name": "Free Fire Global", "url": "https://www.mediafire.com/file/1qfv5eid2omnxkt/FREFIRE+GLOBAL.apk/file"}, {"name": "HOLOGRAMA VIP", "url": "https://www.mediafire.com/file/8p6ln061vo45d8h/HOLOGRAMA+VIP+XZ67.zip/file"}, {"name": "holograma VIP + HOLOGRAMA armas + wall HACK", "url": "https://www.mediafire.com/file/144tsgekybs23cl/HOLOGRAMA+AZUL+PERSONAJES+++ARMAS++WALL+HACK+PARED+glob+.zip/file"}, {"name": "HOLOGRAMA armas solas", "url": "https://www.mediafire.com/file/sjl2bq8tthh3ok7/HOLOGRAMA+ARMAS+%E2%9D%A4%EF%B8%8F%F0%9F%A9%B5.zip/file"}, {"name": "Personajes azúl+armas rojas+WALL HACK PARED glob", "url": "https://www.mediafire.com/file/vlvm931r69w69w6/HOLOGRAMA+AZUL+ARMAS+ROJAS+WAL+Hak.zip/file"}];
-const defaultTitle='DESCARGA JESÚS 100%';
-let products=loadSaved()||initialProducts.map(p=>({...p}));let editing=-1;
-const $=id=>document.getElementById(id);
-function loadSaved(){try{const x=localStorage.getItem('descargas_editor_products');return x?JSON.parse(x):null}catch(e){return null}}
-function persist(){try{localStorage.setItem('descargas_editor_products',JSON.stringify(products))}catch(e){} }
-function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-function render(){ $('list').innerHTML=products.length?products.map((p,i)=>`<div class="product"><strong>${i+1}. ${esc(p.name)}</strong><small>${esc(p.url)}</small><div class="actions"><button class="secondary" onclick="editProduct(${i})">Editar</button><button class="secondary" onclick="moveProduct(${i},-1)" ${i===0?'disabled':''}>↑ Subir</button><button class="secondary" onclick="moveProduct(${i},1)" ${i===products.length-1?'disabled':''}>↓ Bajar</button><button class="danger" onclick="deleteProduct(${i})">Eliminar</button></div></div>`).join(''):'<p class="hint">Todavía no hay productos. Añade el primero arriba.</p>';
-$('preview').innerHTML=products.map(p=>`<div class="item"><strong>${esc(p.name)}</strong><a href="${esc(p.url)}" target="_blank" rel="noopener noreferrer">DESCARGAR AHORA</a></div>`).join('');persist()}
-function resetForm(){editing=-1;$('name').value='';$('url').value='';$('save').textContent='Añadir producto';$('cancel').hidden=true}
-$('save').addEventListener('click',()=>{const name=$('name').value.trim(),url=$('url').value.trim();if(!name||!url){$('status').textContent='Escribe el nombre y el enlace.';return}try{const u=new URL(url);if(!['http:','https:'].includes(u.protocol))throw 0}catch(e){$('status').textContent='El enlace debe empezar con https:// o http://';return}if(editing<0){products.push({name,url});$('status').textContent='Producto añadido.'}else{products[editing]={name,url};$('status').textContent='Producto actualizado.'}resetForm();render()});
-$('cancel').addEventListener('click',resetForm);
-window.editProduct=i=>{editing=i;$('name').value=products[i].name;$('url').value=products[i].url;$('save').textContent='Guardar cambios';$('cancel').hidden=false;$('status').textContent='Editando producto '+(i+1);window.scrollTo({top:0,behavior:'smooth'})};
-window.deleteProduct=i=>{if(confirm('¿Eliminar «'+products[i].name+'»?')){products.splice(i,1);if(editing===i)resetForm();render();$('status').textContent='Producto eliminado.'}};
-window.moveProduct=(i,d)=>{const j=i+d;if(j<0||j>=products.length)return;[products[i],products[j]]=[products[j],products[i]];render()};
-function makePage(){const cards=products.map(p=>`<section class="producto"><h2>${esc(p.name)}</h2><a class="descargar" href="${esc(p.url)}" target="_blank" rel="noopener noreferrer">DESCARGAR AHORA</a></section>`).join('\n');return `<!DOCTYPE html>\n<html lang="es">\n<head>\n<meta charset="UTF-8">\n<meta name="viewport" content="width=device-width, initial-scale=1.0">\n<title>Descarga Jesús 100%</title>\n<style>\n*{margin:0;padding:0;box-sizing:border-box}\nbody{font-family:Arial,sans-serif;background:linear-gradient(160deg,#080808,#191919,#330000);color:#fff;min-height:100vh;padding:20px 14px}\nheader{text-align:center;padding:28px 10px;margin-bottom:25px;background:linear-gradient(135deg,#e60000,#700000);border-radius:18px;box-shadow:0 0 22px #ff000055}\nheader h1{font-size:28px;font-weight:900;text-transform:uppercase}\nheader p{margin-top:10px;font-size:14px;color:#ffe4e4}\n.container{max-width:650px;margin:auto}\n.producto{background:#171717;border:1px solid #393939;border-radius:15px;padding:18px;margin-bottom:16px;text-align:center;box-shadow:0 5px 15px #0005}\n.producto h2{font-size:18px;margin-bottom:14px;color:#fff}\n.descargar{display:block;width:100%;background:linear-gradient(90deg,#ff1717,#b30000);color:#fff;padding:14px;border-radius:10px;text-decoration:none;font-size:15px;font-weight:bold;transition:.2s}\n.descargar:active{transform:scale(.97)}\n.descargar:hover{background:#ff3838;box-shadow:0 0 15px #ff000066}\nfooter{text-align:center;margin-top:30px;padding:20px 5px;color:#aaa;font-size:12px;line-height:1.6}\n</style>\n</head>\n<body>\n<header>\n<h1>DESCARGA JESÚS 100%</h1>\n<p>Centro de descargas · Selecciona tu producto</p>\n</header>\n<main class="container">\n${cards}\n</main>\n<footer>DESCARGA JESÚS 100%<br>Verifica los archivos antes de instalarlos. Los archivos APK y ZIP pueden contener riesgos de seguridad.</footer>\n</body>\n</html>\n`}
-$('export').addEventListener('click',()=>{const blob=new Blob([makePage()],{type:'text/html;charset=utf-8'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='index.html';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1000);$('status').textContent='Página HTML generada. Súbela a tu hosting para publicar los cambios.'});
-$('backup').addEventListener('click',()=>{const b=new Blob([JSON.stringify(products,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='productos-descargas.json';a.click();URL.revokeObjectURL(a.href)});
-$('importJson').addEventListener('change',async e=>{const f=e.target.files[0];if(!f)return;try{const data=JSON.parse(await f.text());if(!Array.isArray(data)||!data.every(p=>p.name&&p.url))throw 0;products=data;resetForm();render();$('status').textContent='Copia importada.'}catch(err){$('status').textContent='No se pudo importar ese JSON.'}e.target.value=''});
-$('importHtml').addEventListener('change',async e=>{const f=e.target.files[0];if(!f)return;try{const doc=new DOMParser().parseFromString(await f.text(),'text/html');const found=[...doc.querySelectorAll('.producto')].map(el=>({name:el.querySelector('h2')?.textContent.trim(),url:el.querySelector('a[href]')?.getAttribute('href')})).filter(p=>p.name&&p.url);if(!found.length)throw 0;products=found;resetForm();render();$('status').textContent='Página importada: '+found.length+' productos cargados.'}catch(err){$('status').textContent='No encontré productos en ese HTML.'}e.target.value=''});
-render();
-</script></body></html>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ESTEBANxz67 — Descargas</title>
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Arial, Helvetica, sans-serif;
+      background: #080808;
+      color: #fff;
+      overflow-x: hidden;
+    }
+
+    /* Pantalla de carga */
+    #loader {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      background: #080808;
+      transition: opacity .5s ease, visibility .5s ease;
+    }
+
+    #loader.hide {
+      opacity: 0;
+      visibility: hidden;
+    }
+
+    .loader-title {
+      font-size: clamp(28px, 8vw, 48px);
+      font-weight: 900;
+      margin-bottom: 22px;
+      text-align: center;
+    }
+
+    .loader-title span { color: #ff1515; }
+
+    .spinner {
+      width: 55px;
+      height: 55px;
+      border: 5px solid #333;
+      border-top-color: #ff1515;
+      border-radius: 50%;
+      animation: spin .8s linear infinite;
+    }
+
+    .loading-text {
+      margin-top: 18px;
+      color: #ccc;
+      font-size: 15px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Página */
+    .page {
+      width: min(100%, 700px);
+      margin: 0 auto;
+      padding: 18px 14px 45px;
+      animation: pageIn .6s ease;
+    }
+
+    @keyframes pageIn {
+      from { opacity: 0; transform: translateY(18px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .hero {
+      text-align: center;
+      background: linear-gradient(145deg, #ff1818, #a90000);
+      border-radius: 18px;
+      padding: 27px 18px;
+      margin-bottom: 18px;
+      box-shadow: 0 8px 25px rgba(255, 0, 0, .12);
+    }
+
+    .hero h1 {
+      margin: 0 0 9px;
+      font-size: clamp(27px, 7vw, 42px);
+      font-weight: 900;
+    }
+
+    .hero p {
+      margin: 0;
+      font-size: 17px;
+      opacity: .95;
+    }
+
+    .card {
+      background: #181818;
+      border: 1px solid #414141;
+      border-radius: 18px;
+      padding: 22px 20px 24px;
+      margin: 16px 0;
+      text-align: center;
+      box-shadow: 0 5px 18px rgba(0,0,0,.25);
+    }
+
+    .card h2 {
+      margin: 0 0 20px;
+      font-size: clamp(21px, 5vw, 29px);
+      line-height: 1.2;
+      font-weight: 800;
+    }
+
+    .download-btn {
+      display: block;
+      width: 100%;
+      padding: 17px 14px;
+      border-radius: 15px;
+      background: linear-gradient(90deg, #ff1b1b, #d50000);
+      color: #fff;
+      text-decoration: none;
+      font-size: clamp(18px, 5vw, 25px);
+      font-weight: 900;
+      transition: transform .15s ease, filter .15s ease;
+    }
+
+    .download-btn:hover {
+      filter: brightness(1.12);
+      transform: scale(1.01);
+    }
+
+    .download-btn:active {
+      transform: scale(.98);
+    }
+
+    .download-btn.disabled {
+      background: #555;
+      cursor: not-allowed;
+      opacity: .7;
+    }
+
+    .notice {
+      color: #aaa;
+      font-size: 13px;
+      margin-top: 10px;
+    }
+
+    footer {
+      text-align: center;
+      color: #777;
+      font-size: 13px;
+      margin-top: 28px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- CARGA DE 3 SEGUNDOS -->
+  <div id="loader">
+    <div class="loader-title">ESTEBAN<span>xz67</span></div>
+    <div class="spinner"></div>
+    <div class="loading-text">Cargando descargas...</div>
+  </div>
+
+  <main class="page">
+    <header class="hero">
+      <h1>DESCARGA ESTEBANxz67</h1>
+      <p>Centro de descargas · Selecciona tu producto</p>
+    </header>
+
+    <section class="card">
+      <h2>REGEDIT 100%</h2>
+      <a class="download-btn"
+         href="https://www.mediafire.com/file/l8h4aok4i8bwogy/REGEDIT_100%2525.zip/file"
+         target="_blank" rel="noopener noreferrer">
+        DESCARGAR AHORA
+      </a>
+    </section>
+
+    <section class="card">
+      <h2>FlY Wukong</h2>
+      <a class="download-btn"
+         href="https://www.mediafire.com/file/ehggnewbfe0gdpf/FLY+WUKONG+VIP.zip/file"
+         target="_blank" rel="noopener noreferrer">
+        DESCARGAR AHORA
+      </a>
+    </section>
+
+    <section class="card">
+      <h2>Balas Mágicas 600%</h2>
+      <a class="download-btn"
+         href="https://www.mediafire.com/file/o3fh0kqfzbjyrwh/BALAS_M%25C3%2581GICAS_600%2525%25F0%259F%2592%25AF%25F0%259F%2592%25A5.zip/file"
+         target="_blank" rel="noopener noreferrer">
+        DESCARGAR AHORA
+      </a>
+    </section>
+
+    <section class="card">
+      <h2>Tienda Invisible</h2>
+      <a class="download-btn"
+         href="https://www.mediafire.com/file/1v9v484mncy4g0j/TIENDA+%E2%9B%BA+INVISIBLE+%F0%9F%92%AF%F0%9F%92%A5.zip/file"
+         target="_blank" rel="noopener noreferrer">
+        DESCARGAR AHORA
+      </a>
+    </section>
+
+    <section class="card">
+      <h2>Wall Hack Bermuda Todos los Mapas</h2>
+      <a class="download-btn"
+         href="https://www.mediafire.com/file/wddx6mvsjck83vd/WOLHACK+BERMUDA+TODOS+LOS+MAPAS.7z/file"
+         target="_blank" rel="noopener noreferrer">
+        DESCARGAR AHORA
+      </a>
+    </section>
+
+    <section class="card">
+      <h2>Wall Hack Soco</h2>
+      <a class="download-btn"
+         href="https://www.mediafire.com/file/n72cmlk7fjdlwmz/WALL+SOCO.zip/file"
+         target="_blank" rel="noopener noreferrer">
+        DESCARGAR AHORA
+      </a>
+    </section>
+
+    <section class="card">
+      <h2>Teletransportación + Puños Dron</h2>
+      <a class="download-btn"
+         href="https://www.mediafire.com/file/aahbnr60rtllmu8/TELEPORT+DRONE+++GELO+INVIS%C3%8DVEL+%F0%9F%9F%A2.zip/file"
+         target="_blank" rel="noopener noreferrer">
+        DESCARGAR AHORA
+      </a>
+    </section>
+
+    <section class="card">
+      <h2>No Recoil + Pared Invisible</h2>
+      <a class="download-btn"
+         href="https://www.mediafire.com/file/m8c67j0j2u5l91q/MINI+REGEDIT+++NO+RECOIL+++GELO+INVIS%C3%8DVEL+%F0%9F%94%B5.7z/file"
+         target="_blank" rel="noopener noreferrer">
+        DESCARGAR AHORA
+      </a>
+    </section>
+
+    <section class="card">
+      <h2>Pared Gloo Invisible</h2>
+      <a class="download-btn"
+         href="https://www.mediafire.com/file/6txpka77eewvf3s/GELO+INVIS%C3%8DVEL%F0%9F%94%B5.zip/file"
+         target="_blank" rel="noopener noreferrer">
+        DESCARGAR AHORA
+      </a>
+    </section>
+
+    <section class="card">
+      <h2>Free Fire Global</h2>
+      <a class="download-btn"
+         href="https://www.mediafire.com/file/1qfv5eid2omnxkt/FREFIRE+GLOBAL.apk/file"
+         target="_blank" rel="noopener noreferrer">
+        DESCARGAR AHORA
+      </a>
+    </section>
+
+    <section class="card">
+      <h2>HOLOGRAMA vip</h2>
+      <a class="download-btn"
+         href="https://www.mediafire.com/file/8p6ln061vo45d8h/HOLOGRAMA+VIP+XZ67.zip/file"
+         target="_blank" rel="noopener noreferrer">
+        DESCARGAR AHORA
+      </a>
+    </section>
+
+    <section class="card">
+      <h2>HOLOGRAMA celeste</h2>
+      <a class="download-btn"
+         href="https://www.mediafire.com/file/qjkhrgj8rtmtede/%F0%9F%92%8E%F0%9F%94%A5+HOLOGRAMA+VIP+FULL+%F0%9F%8C%8E+CELESTE+%F0%9F%94%A5%F0%9F%92%8E.zip/file"
+         target="_blank" rel="noopener noreferrer">
+        DESCARGAR AHORA
+      </a>
+    </section>
+
+    <footer>ESTEBANxz67 · Centro de descargas</footer>
+  </main>
+
+  <script>
+    // La pantalla de carga dura exactamente 3 segundos.
+    window.addEventListener("load", () => {
+      setTimeout(() => {
+        document.getElementById("loader").classList.add("hide");
+      }, 3000);
+    });
+  </script>
+
+</body>
+</html>
